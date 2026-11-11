@@ -7,7 +7,7 @@ class HomePage {
         //locators
         this.mainHeading = page.getByRole('heading', { name: 'Welcome to Shady Meadows B&B' })
         this.roomsHeading = page.getByRole('heading', { name: 'Our Rooms' })
-        this.checkInInput = page.locator('.react-datepicker__input-container input').nth(1)
+        this.checkInInput = page.locator('.react-datepicker__input-container input').nth(0)
         this.checkOutInput = page.locator('.react-datepicker__input-container input').nth(1)
         this.checkAvailabilityButton = page.getByRole('button', { name: 'Check Availability' })
     }
@@ -37,7 +37,20 @@ class HomePage {
     }
 
     async checkAvailability(){
+        const responsePromisse = this.page.waitForResponse(response =>
+            response.url().includes('/api/room') &&
+            response.request().method() === 'GET'
+        )
+
         await this.checkAvailabilityButton.click()
+
+        const response = await responsePromisse
+
+        return {
+            status: response.status(),
+            url: response.url(),
+            body: await response.json()
+        }
     }
 }
 
