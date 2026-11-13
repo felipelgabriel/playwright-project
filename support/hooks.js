@@ -3,12 +3,14 @@ const {
     AfterAll,
     Before,
     After,
-    Status
+    Status,
+    setDefaultTimeout
 } = require('@cucumber/cucumber')
 
 const { chromium, request} = require('playwright')
 
 let browser
+setDefaultTimeout(15000)
 
 BeforeAll(async function() {
     browser = await chromium.launch({
@@ -19,6 +21,14 @@ BeforeAll(async function() {
 Before(async function() {
     this.context = await browser.newContext()
     this.page = await this.context.newPage()
+
+    this.apiContext = await request.newContext()
+
+    const RoomApiClient = require('../clients/RoomApiClient')
+    this.roomApiClient = new RoomApiClient(this.apiContext)
+
+    const BookingApiClient = require('../clients/BookingApiClient')
+    this.bookingApiClient = new BookingApiClient(this.apiContext)
 
     this.page.on('requestfailed', request => {
         console.log(
@@ -45,6 +55,7 @@ After(async function(scenario) {
         await this.attach(screenshot, 'image/png')
     }
 
+    await this.apiContext.dispose()
     await this.context.close()
 })
 

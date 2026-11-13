@@ -6,7 +6,9 @@
   "scripts": {
     "test": "cucumber-js",
     "test:web": "cucumber-js --tags @web",
-    "test:api": "cucumber-js --tags @api"
+    "test:api": "cucumber-js --tags \"@api and not @known-defect\"",
+    "test:api:all": "cucumber-js --tags @api",
+    "test:known-defects": "cucumber-js --tags @known-defect"
   },
   "private": true,
   "dependencies": {
