@@ -12,5 +12,5 @@ Funcionalidade: Gerenciamento de reservas
     Então a API deve autenticar o usuário com sucesso
     Quando envio os dados de uma nova reserva
     Então a API deve criar a reserva com sucesso
-    Quando consulto a reserva recém-criada
+    Quando Quando consulto as reservas do quarto recém-utilizado
     Então os dados da reserva devem corresponder aos dados enviados

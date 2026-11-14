@@ -80,6 +80,36 @@ class BookingApiClient {
             headers: response.headers()
         };
     }
+
+    async getBookingsByRoom(roomId, token) {
+        const response = await this.request.get(
+            `${this.baseURL}/api/booking`,
+            {
+                params: {
+                    roomid: roomId
+                },
+                headers: {
+                    Cookie: `token=${token}`
+                },
+                timeout: 10000
+            }
+        );
+
+        const responseText = await response.text();
+
+        let body;
+
+        try {
+            body = JSON.parse(responseText);
+        } catch (error) {
+            body = responseText;
+        }
+
+        return {
+            status: response.status(),
+            body
+        };
+    }
 }
 
 module.exports = BookingApiClient
