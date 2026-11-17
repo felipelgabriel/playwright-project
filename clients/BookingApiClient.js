@@ -110,6 +110,63 @@ class BookingApiClient {
             body
         };
     }
+
+    async updateBooking(bookingId, bookingData, token) {
+        const response = await this.request.put(
+            `${this.baseURL}/api/booking/${bookingId}`,
+            {
+                data: bookingData,
+                headers: {
+                    Cookie: `token=${token}`
+                },
+                timeout: 10000
+            }
+        )
+
+        const responseText = await response.text()
+
+        let body
+
+        try {
+            body = JSON.parse(responseText);
+        } catch (error) {
+            body = responseText;
+        }
+
+        return {
+            status: response.status(),
+            body,
+            headers: response.headers()
+        }
+    }
+
+    async deleteBooking(bookingId, token) {
+        const response = await this.request.delete(
+            `${this.baseURL}/api/booking/${bookingId}`,
+            {
+                headers: {
+                    Cookie: `token=${token}`
+                },
+                timeout: 10000
+            }
+        )
+
+        const responseText = await response.text();
+
+        let body;
+
+        try{
+            body = JSON.parse(responseText);
+        } catch (error) {
+            body = responseText;
+        }
+
+        return {
+            status: response.status(),
+            body,
+            headers: response.headers()
+        }
+    }
 }
 
 module.exports = BookingApiClient

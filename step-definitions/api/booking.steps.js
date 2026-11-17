@@ -2,7 +2,6 @@ const { When, Then } = require('@cucumber/cucumber')
 const { expect } = require('@playwright/test')
 const { getBookingDates } = require('../../utils/dateUtils')
 
-const bookingData = require('../../fixtures/bookingData')
 const createBookingData = require("../../fixtures/bookingData");
 
 When('realizo a autenticação na API com usuário {string} e senha {string}', async function (username, password) {
@@ -71,7 +70,7 @@ When('envio os dados de uma nova reserva', async function () {
     }
 );
 
-When('Quando consulto as reservas do quarto recém-utilizado', async function () {
+When('consulto as reservas do quarto recém-utilizado', async function () {
     this.bookingListResponse =
         await this.bookingApiClient.getBookingsByRoom(
             this.selectedRoom.roomid,
@@ -81,6 +80,77 @@ When('Quando consulto as reservas do quarto recém-utilizado', async function ()
     console.log('QUARTO CONSULTADO:', this.selectedRoom.roomid)
     console.log('STATUS DA CONSULTA:', this.bookingListResponse.status)
     console.log('RESERVAS ENCONTRADAS:', this.bookingListResponse.body)
+})
+
+When('consulto individualmente a reserva recém-criada', async function () {
+    this.bookingDetailsResponse = await this.bookingApiClient.getBooking(
+        this.bookingId,
+        this.token
+    )
+
+    console.log('--- CONSULTA INDIVIDUAL ---')
+    console.log('BOOKING ID: ', this.bookingId)
+    console.log('STATUS: ', this.bookingDetailsResponse.status)
+    console.log('RESPOSTA: ', this.bookingDetailsResponse.body)
+})
+
+When('atualizo os dados da reserva recém-criada', async function () {
+
+    // Verifica a reserva antes da atualização
+    const beforeUpdate =
+        await this.bookingApiClient.getBookingsByRoom(
+            this.selectedRoom.roomid,
+            this.token
+        )
+
+    const bookingBefore = beforeUpdate.body.bookings.find(
+        item => item.bookingid === this.bookingId
+    )
+
+    console.log('--- ANTES DO PUT ---')
+    console.log('STATUS:', beforeUpdate.status)
+    console.log('RESERVA ENCONTRADA:', bookingBefore)
+
+    expect(bookingBefore).toBeDefined()
+
+    // Prepara os novos dados
+    this.updatedBookingData = {
+        roomid: this.bookingData.roomid,
+        firstname: 'Felipe Updated',
+        lastname: 'QA Automation',
+        depositpaid: this.bookingData.depositpaid,
+        bookingdates: {
+            checkin: this.bookingData.bookingdates.checkin,
+            checkout: this.bookingData.bookingdates.checkout
+        }
+    }
+
+    // Executa atualização
+    this.updateBookingResponse =
+        await this.bookingApiClient.updateBooking(
+            this.bookingId,
+            this.updatedBookingData,
+            this.token
+        )
+
+    console.log('--- RESPOSTA DO PUT ---')
+    console.log('STATUS:', this.updateBookingResponse.status)
+    console.log('BODY:', this.updateBookingResponse.body)
+
+    // Consulta novamente após o PUT
+    this.bookingListResponse =
+        await this.bookingApiClient.getBookingsByRoom(
+            this.selectedRoom.roomid,
+            this.token
+        )
+
+    const bookingAfter = this.bookingListResponse.body.bookings.find(
+        item => item.bookingid === this.bookingId
+    )
+
+    console.log('--- DEPOIS DO PUT ---')
+    console.log('STATUS:', this.bookingListResponse.status)
+    console.log('RESERVA ENCONTRADA:', bookingAfter)
 })
 
 Then('a API deve autenticar o usuário com sucesso', function () {
@@ -130,4 +200,28 @@ Then('os dados da reserva devem corresponder aos dados enviados', function () {
     expect(booking.bookingdates.checkout).toBe(
         expected.bookingdates.checkout
     )
+})
+
+Then('a consulta individual deve retornar HTTP 200', function () {
+    expect(this.bookingDetailsResponse).toBeDefined()
+    expect(this.bookingDetailsResponse.status).toBe(200)
+})
+
+Then('a API deve atualizar a reserva com sucesso', function () {
+    expect(this.updateBookingResponse.status).toBe(200)
+})
+
+Then('os dados atualizados devem corresponder aos dados enviados', function () {
+    expect(this.bookingListResponse.status).toBe(200)
+
+    const booking = this.bookingListResponse.body.bookings.find(
+        item => item.bookingid === this.bookingId
+    )
+
+    expect(booking).toBeDefined()
+    expect(booking.firstname).toBe(this.updatedBookingData.firstname)
+    expect(booking.lastname).toBe(this.updatedBookingData.lastname)
+    expect(booking.roomid).toBe(this.updatedBookingData.roomid)
+    expect(booking.depositpaid).toBe(this.updatedBookingData.depositpaid)
+
 })
