@@ -1,12 +1,12 @@
 # language: pt
 
-@api @authentication
-Funcionalidade: Autenticação na API
+@api @offices
+Funcionalidade: Consulta de escritórios
+  Como consumidor da API Mifos
+  Quero consultar os escritórios cadastrados
+  Para obter informações sobre as unidades disponíveis
 
-  Como consumidor da API Restful Booker
-  Quero realizar autenticação
-  Para acessar operações protegidas
-
-  Cenario: CT001 - Autenticar usuário com credenciais  válidas
-    Quando realizo a autenticação na API com usuário "admin" e senha "password"
-    Então a API deve autenticar o usuário com sucesso
+  Cenário: CT001 - Consultar lista de escritórios
+    Quando consulto a lista de escritórios
+    Então a API deve retornar status 200
+    E a resposta deve conter uma lista de escritórios

@@ -1,64 +1,36 @@
 const {
-    BeforeAll,
-    AfterAll,
     Before,
     After,
-    Status,
     setDefaultTimeout
 } = require('@cucumber/cucumber')
 
-const { chromium, request} = require('playwright')
+const { request } = require('playwright')
+require('dotenv').config()
 
-let browser
 setDefaultTimeout(15000)
 
-BeforeAll(async function() {
-    browser = await chromium.launch({
-        headless: true,
-    })
-})
+Before(async function () {
+    const auth = Buffer.from(
+        `${process.env.MIFOS_USERNAME}:${process.env.MIFOS_PASSWORD}`
+    ).toString('base64')
 
-Before(async function() {
-    this.context = await browser.newContext()
-    this.page = await this.context.newPage()
-
-    this.apiContext = await request.newContext()
-
-    const RoomApiClient = require('../clients/RoomApiClient')
-    this.roomApiClient = new RoomApiClient(this.apiContext)
-
-    const BookingApiClient = require('../clients/BaseApiClient')
-    this.bookingApiClient = new BookingApiClient(this.apiContext)
-
-    this.page.on('requestfailed', request => {
-        console.log(
-            'REQUEST FAILED:',
-            request.url(),
-            request.failure()?.errorText
-        )
-    })
-
-    this.page.on('pageerror', error => {
-        console.log('JAVASCRIPT ERROR:', error.message)
-    })
-
-    this.page.on('console', message => {
-        if (message.type === 'error') {
-            console.log('BROWSER CONSOLE ERROR:', message.text())
+    this.apiContext = await request.newContext({
+        extraHTTPHeaders: {
+            Authorization: `Basic ${auth}`,
+            'X-Mifos-Platform-TenantId': process.env.MIFOS_TENANT
         }
     })
+
+    const OfficeApiClient = require('../clients/OfficeApiClient')
+
+    this.officeApiClient = new OfficeApiClient(
+        this.apiContext,
+        process.env.MIFOS_BASE_URL
+    )
 })
 
-After(async function(scenario) {
-    if (scenario.result?.status === Status.FAILED){
-        const screenshot = await this.page.screenshot()
-        await this.attach(screenshot, 'image/png')
+After(async function () {
+    if (this.apiContext) {
+        await this.apiContext.dispose()
     }
-
-    await this.apiContext.dispose()
-    await this.context.close()
-})
-
-AfterAll(async function() {
-    await browser.close()
 })
