@@ -3,6 +3,11 @@ const assert = require('node:assert/strict')
 
 When('consulto a lista de escritórios', async function () {
     this.response = await this.officeApiClient.getOffices()
+
+    console.log(
+        '\nRESPOSTA DA API:',
+        JSON.stringify(this.response.body[0], null, 2)
+    )
 })
 
 Then('a API deve retornar status {int}', function (expectedStatus) {
