@@ -27,7 +27,7 @@ Before(async function() {
     const RoomApiClient = require('../clients/RoomApiClient')
     this.roomApiClient = new RoomApiClient(this.apiContext)
 
-    const BookingApiClient = require('../clients/BookingApiClient')
+    const BookingApiClient = require('../clients/BaseApiClient')
     this.bookingApiClient = new BookingApiClient(this.apiContext)
 
     this.page.on('requestfailed', request => {

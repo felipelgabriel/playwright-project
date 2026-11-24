@@ -12,6 +12,7 @@
   },
   "private": true,
   "dependencies": {
+    "dotenv": "^18.0.10",
     "playwright": "^1.65.0"
   },
   "devDependencies": {

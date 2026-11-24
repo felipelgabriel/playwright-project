@@ -34,3 +34,14 @@ Funcionalidade: Gerenciamento de reservas
     Então a API deve atualizar a reserva com sucesso
     Quando consulto as reservas do quarto recém-utilizado
     Então os dados atualizados devem corresponder aos dados enviados
+
+  @api @booking @delete
+  Cenário: Excluir uma reserva existente
+    Quando realizo a autenticação na API com usuário "admin" e senha "password"
+    Então a API deve autenticar o usuário com sucesso
+    Quando envio os dados de uma nova reserva
+    Então a API deve criar a reserva com sucesso
+    Quando excluo a reserva recém-criada
+    Então a API deve excluir a reserva com sucesso
+    Quando consulto as reservas do quarto recém-utilizado
+    Então a reserva excluída não deve existir na listagem

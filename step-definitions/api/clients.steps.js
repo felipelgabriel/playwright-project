@@ -2,7 +2,7 @@ const { When, Then } = require('@cucumber/cucumber')
 const { expect } = require('@playwright/test')
 const { getBookingDates } = require('../../utils/dateUtils')
 
-const createBookingData = require("../../fixtures/bookingData");
+const createBookingData = require("../../fixtures/clientData");
 
 When('realizo a autenticação na API com usuário {string} e senha {string}', async function (username, password) {
     this.authResponse = await this.bookingApiClient.authenticate(username, password)
@@ -153,6 +153,15 @@ When('atualizo os dados da reserva recém-criada', async function () {
     console.log('RESERVA ENCONTRADA:', bookingAfter)
 })
 
+When('excluo a reserva recém-criada', async function () {
+    this.deleteBookingResponse = await this.bookingApiClient.deleteBooking(
+        this.bookingId,
+        this.token
+    )
+
+    console.log('RESPOSTA DELETE: ', this.deleteBookingResponse)
+})
+
 Then('a API deve autenticar o usuário com sucesso', function () {
     expect(this.authResponse.status).toBe(200)
     expect(this.authResponse.body).toHaveProperty('token')
@@ -224,4 +233,18 @@ Then('os dados atualizados devem corresponder aos dados enviados', function () {
     expect(booking.roomid).toBe(this.updatedBookingData.roomid)
     expect(booking.depositpaid).toBe(this.updatedBookingData.depositpaid)
 
+})
+
+Then('a API deve excluir a reserva com sucesso', function () {
+    expect(this.deleteBookingResponse.status).toBe(201)
+})
+
+Then('a reserva excluída não deve existir na listagem', function () {
+    expect(this.bookingListResponse.status).toBe(200)
+
+    const deletedBooking = this.bookingListResponse.body.bookings.find(
+        booking => booking.bookingid == this.bookingId
+    )
+
+    expect(deletedBooking).toBeUndefined()
 })
